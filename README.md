@@ -18,6 +18,11 @@ As the original source explained before going dark, server-client streaming of h
 * Not looking for commentary or assistance at this time
 * Do not try to run yet because it won't do anything
 
+# License
+This software is currently licensed as CC BY-NC-SA.
+
+Feel free to fork it, modify it as you desire, and use it for any non-commercial purpose. Just remember to share your changes somewhere, and be sure that your license is at least as permissive as mine.
+
 # Disclaimer
 Use this software at your own risk. I'm not responsible for what it may do, or how it is used, or what you do to/with/by yourself.
 
