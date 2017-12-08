@@ -1,0 +1,4 @@
+src/cache.json
+src/vars.sed
+client/base_*.js
+client/index.html
