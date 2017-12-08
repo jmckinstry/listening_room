@@ -8,6 +8,10 @@ That site is long since gone (so much so that I am having difficulty finding it 
 
 As the original source explained before going dark, server-client streaming of high-quality audio is bandwidth-intensive. This project aims to alleviate that by using the wonderful [WebTorrent](https://webtorrent.io/) library, so listeners share the burden.
 
+# Requirements
+* Some variety of web server (httpd)
+* Node.js
+
 # Status
 * prealpha
 * Not functioning currently

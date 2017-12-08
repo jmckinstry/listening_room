@@ -11,11 +11,10 @@ rm -f src/vars.sed
 # client/base.js : The bare minimum javascript required to start UI and processing on the page
 # - Reads from:
 # -   src/client/
+# -   src/client/templates/
 # -   src/credits/
 rm -f client/script/base_*.js
-#for f in src/client/*.js; do (cat "${f}"; echo) >> client/base_${DATESTAMP}.js; done
-#for f in src/credits/*.js; do (cat "${f}"; echo) >> client/base_${DATESTAMP}.js; done
-uglifyjs -c -m --mangle-props --name-cache src/cache.json -- src/client/*.js src/credits/*.js > client/script/base_${DATESTAMP}.js
+uglifyjs -c -m --mangle-props --name-cache src/cache.json -- src/client/*.js src/client/templates/*.js src/credits/*.js > client/script/base_${DATESTAMP}.js
 
 echo "s/{{base.js}}/base_${DATESTAMP}.js/g" >> src/vars.sed
 

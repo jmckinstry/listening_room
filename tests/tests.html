@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title>Testing page for Listening Room Imposter</title>
+</head>
+
+<body>
+<div id="results">
+	<table id=result_list border=1>
+	</table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.10/ractive.min.js"></script>
+
+<script src="tests.js"></script>
+<script>
+// Kill the window.onload call so we don't try to run the page normally
+window.onload = null
+
+console.log("Running " + tests.length + " tests now...")
+
+var test_results = do_tests()
+
+for (var x = 0; x < test_results.length; x++) {
+	var result = test_results[x]
+
+	console.log("Now testing: " + result.name + "...")
+	$("#result_list").append("<tr><td>" + result.name + "</td><td>" + result.result + "</td></tr>")
+	console.log("	" + result.result)
+}
+
+</script>
+</body>
+
+</html>

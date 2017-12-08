@@ -1,0 +1,11 @@
+// tests.push({name:"<name>", func:<function>, inputs:Array(inputs, ...), eval:<test_eval_function>, expected:<expected_eval_function_result>)
+tests.push({
+	name: "",
+	func: ,
+	inputs: [],
+	eval: function(res) {
+		return false
+	},
+	expected: null
+})
+	

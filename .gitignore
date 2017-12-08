@@ -1,5 +1,5 @@
 src/cache.json
 src/vars.sed
-client/script/base_*.js
-client/index.html
+client/*
+!client/.gitkeep
 dev-init.sh
