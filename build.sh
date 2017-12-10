@@ -18,7 +18,6 @@ uglifyjs ${UGLIFYJS_OPTIONS} -- \
 	src/client/*.js \
 	src/client/UI/*.js \
 	src/credits/*.js \
-	src/client/last/*.js \
 	> client/script/base_${DATESTAMP}.js
 
 # client/template_${DATESTAMP}.ractive: The templates for Ractive to render UI
@@ -29,5 +28,10 @@ for f in src/client/UI/templates/*; do (cat "${f}"; echo) >> client/template_${D
 # Replacement : Replace placeholder names in source files
 echo "s/{{BUILD_TIMESTAMP}}/${DATESTAMP}/g" >> src/vars.sed
 
+# client/index.html
 sed -f src/vars.sed src/client/index.html > client/index.html
+
+# client/css/*
+rm -r client/css
+cp -R src/client/css client/css
 

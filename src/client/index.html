@@ -4,15 +4,16 @@
 <title>Listening Room Imposter Indev</title>
 </head>
 
-<body>
+<body style="position:relative;">
+<!-- Styles -->
+<link rel="stylesheet" type="text/css" href="css/main.css">
+
 <!-- Load js base files before rendering anything -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ractive@0.9.10/ractive.min.js"></script>
 
-<!-- jQuery load our ractive templates -->
 <div id="templates" style="display: none;"></div>
-<script>$("#templates").load("template_{{BUILD_TIMESTAMP}}.ractive")</script>
 <!-- Load our actual script -->
 <script src="script/base_{{BUILD_TIMESTAMP}}.js"></script>
 
@@ -22,10 +23,19 @@
 </div>
 
 <!-- Credit where credit is due -->
+<div id="footer" class="bottom">
 <div id="credits">
 Powered by the efforts of many. <a href="#credits">Click here to see who.</a> (Click <a href="tests.html">here</a> for tests during dev)
 </div>
+</div>
+
+<!-- jQuery load our ractive templates and start up the UI -->
+<script>
+$.get("template_{{BUILD_TIMESTAMP}}.ractive", function (data) {
+	$("#templates").append(data)
+	start()
+})
+</script>
 
 </body>
-
 </html>
