@@ -7,7 +7,7 @@
 // start() will be called when the document is finished loading
 
 function start() {
-	clear_screen()
+	clear_ui()
 
 	// 1: Check that they've been here before and cleared the init screen
 	if (Cookies.get("Opus") !== true) {
@@ -23,6 +23,4 @@ function start() {
 		set_ui_login()
 	}
 }
-
-window.onload = start()
 

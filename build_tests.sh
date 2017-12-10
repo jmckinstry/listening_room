@@ -12,6 +12,13 @@ UGLIFYJS_OPTIONS=-b
 cp tests/tests.html client/tests.html
 
 uglifyjs ${UGLIFYJS_OPTIONS} -- tests/tests.js >> client/tests.js
-uglifyjs ${UGLIFYJS_OPTIONS} -- src/client/*.js src/client/templates/*.js src/credits/*.js >> client/tests.js
+
+uglifyjs ${UGLIFYJS_OPTIONS} -- \
+	src/client/*.js \
+	src/client/UI/*.js \
+	src/client/UI/templates/*.js \
+	src/credits/*.js \
+	>> client/tests.js
+
 uglifyjs ${UGLIFYJS_OPTIONS} -- tests/test-*.js >> client/tests.js
 

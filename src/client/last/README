@@ -1,0 +1,1 @@
+This folder will be included last in the javascript build path. Use it for things that require other elements to be in place first

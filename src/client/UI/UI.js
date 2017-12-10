@@ -4,39 +4,11 @@
 // - jquery is loaded
 // - jquery UI is loaded
 
-// Need a default place for templates
-// New templates go in src/client/templates/*.js
-// templates["<template_name>"] = "<ractive_compatible_string>"
-var templates = new Array()
+var ui_ractive = null
 
 // Wipes out all UI so we can put up a new layout
-function clear_screen() {
+function clear_ui() {
 	$("#main").empty()
-}
-
-function set_ui_opus() {
-	clear_screen()
-
-	var ui_main = new Ractive({
-		target: "#main",
-		template: templates["ui_detect"],
-		data: {text: "Checking to see if Opus is enabled for your machine..."}
-	})
-
-	var opus_status = get_opus_status()
-
-	ui_main.set('text', opus_status.text)
-
-	if (opus_status.can_play === true) {
-		// Continue after waiting 2 seconds for debug confirmation
-		window.setTimeout(function(){
-				set_ui_disclaimer()
-			},
-			2000
-		)
-	} else {
-		// Don't hand off to next UI, as they can't do anything here
-	}
 }
 
 // Used to determine if the browser supports Opus codec
