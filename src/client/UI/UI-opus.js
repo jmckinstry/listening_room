@@ -19,7 +19,7 @@ function set_ui_opus() {
 		// TODO: set Opus Cookie so we don't need to check again
                 // Continue after waiting 2 seconds for debug confirmation
                 window.setTimeout(function(){
-                                //set_ui_disclaimer()
+                                set_ui_disclaimer()
                         },
                         2000
                 )
