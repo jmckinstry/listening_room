@@ -5,10 +5,16 @@
 
 # For loop gracious taken from: https://stackoverflow.com/questions/8183191/concatenating-files-and-insert-new-line-in-between-files
 
+#_WITH_DEBUG=
+_WITH_DEBUG=true
+
 DATESTAMP=`date "+%Y%m%d%H%M%S"`
 
+if [ "$_WITH_DEBUG" = true ] ; then
 UGLIFYJS_OPTIONS=-b
-#UGLIFYJS_OPTIONS=-c -m --mangle-props --name-cache src/cache.json
+else
+UGLIFYJS_OPTIONS=-c -m --mangle-props --name-cache src/cache.json
+fi
 
 rm -f src/vars.sed
 
@@ -35,3 +41,14 @@ sed -f src/vars.sed src/client/index.html > client/index.html
 rm -r client/css
 cp -R src/client/css client/css
 
+
+# Now dump out test files if necessary
+if [ "$_WITH_DEBUG" = true ] ; then
+rm -f client/tests.html
+rm -f client/tests.js
+
+sed -f src/vars.sed tests/tests.html > client/tests.html
+
+uglifyjs ${UGLIFYJS_OPTIONS} -- tests/tests.js > client/tests.js
+uglifyjs ${UGLIFYJS_OPTIONS} -- tests/test-*.js >> client/tests.js
+fi

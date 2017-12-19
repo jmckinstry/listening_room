@@ -16,7 +16,8 @@ function set_ui_opus() {
         ui_ractive.set('text', opus_status.text)
 
         if (opus_status.can_play === true) {
-		// TODO: set Opus Cookie so we don't need to check again
+                Cookies.set("Opus", true)
+
                 // Continue after waiting 2 seconds for debug confirmation
                 window.setTimeout(function(){
                                 set_ui_disclaimer()
