@@ -10,7 +10,7 @@ function set_ui_disclaimer() {
 			attention: "Hey You!",
 			disclaimer: "This site uses <a href=\"https://webtorrent.io/intro\">WebTorrent</a> to send and receive sound files."
 				+ "<br>"
-				+ "Only continue if you're okay with using steady upload and download bandwidth. Definitely don't use a metered connection",
+				+ "Only continue if you're okay with using steady upload and download bandwidth. Definitely don't use a metered connection.",
 			next: "Cookies.set(\"disclaimer\", \"accepted\")"
 				+ "\n"
 				+ "set_ui_login()"

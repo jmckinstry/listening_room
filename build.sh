@@ -50,5 +50,6 @@ rm -f client/tests.js
 sed -f src/vars.sed tests/tests.html > client/tests.html
 
 uglifyjs ${UGLIFYJS_OPTIONS} -- tests/tests.js > client/tests.js
+cat "client/script/base_${DATESTAMP}.js" >> client/tests.js
 uglifyjs ${UGLIFYJS_OPTIONS} -- tests/test-*.js >> client/tests.js
 fi
