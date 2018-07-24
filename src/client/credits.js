@@ -10,17 +10,16 @@
 // 		})
 
 var credits = new Array()
+var dialog_credits
 
 // print_credits () returns string(html)
 function print_credits() { 
-	$("#credits-dialog").dialog()
-
-	if ($("#credits-dialog").text().length === 0) {
+	if ($("#credits-accordion")[0] == null) {
 		$("#credits-dialog").append("<div id=\"credits-accordion\"></div>")
 
 		for (var x = 0; x < credits.length; x++) {
 			var credit = credits[x]
-			console.log(credit)
+
 			$("#credits-accordion").append(
 				"<h3>" + credit.name + "</h3>"
 				+ "<div>"
@@ -31,5 +30,30 @@ function print_credits() {
 			)
 		}
 		$("#credits-accordion").accordion()
+		dialog_credits = $("#credits-dialog")
+		dialog_credits.dialog({
+			open: function(event, ui) {
+				$(this).position({
+					of: $("#credits-location"),
+					my: "left bottom",
+					at: "center center",
+					collision: "flip flip"
+				})
+			}
+		})
 	}
+	else if (dialog_credits.is(":visible")) {
+		dialog_credits.hide()
+	}
+	else { // dialog_credits.is(":hidden")
+		dialog_credits.show()
+	}
+/*
+	dialog_credits.position({
+		of: $("#credits-location"),
+		my: "left bottom",
+		at: "center center",
+		collision: "flip flip"
+		})
+*/
 }
