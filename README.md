@@ -18,6 +18,16 @@ As the original source explained before going dark, server-client streaming of h
 * Not looking for commentary or assistance at this time
 * Do not try to run yet because it won't do anything
 
+# Getting Started
+You can't yet. But when you can...
+
+* Configure config.js
+* Run `build.sh` (this will eventually be `node build.js`)
+* Move client folder to web server
+* Run `node server/server.js`
+* Run `node server/server.js --add-admin <name> <pass>`
+* Log in with the new user
+
 # License
 This software is currently licensed as CC BY-NC-SA.
 
