@@ -18,6 +18,8 @@ fi
 
 rm -f src/vars.sed
 
+# Configuration : Pre-build setup.
+
 # client/base.js : The bare minimum javascript required to start UI and processing on the page
 rm -f client/script/base_*.js
 uglifyjs ${UGLIFYJS_OPTIONS} -- \

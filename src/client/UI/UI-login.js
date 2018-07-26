@@ -2,5 +2,13 @@
 
 function set_ui_login() {
 	clear_ui()
+
+        ui_ractive = new Ractive({
+                target: "#main",
+                template: "#login",
+                data: {
+                        next: "do_login()"
+                }
+	})
 }
 
