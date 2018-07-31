@@ -3,3 +3,4 @@ src/vars.sed
 client/*
 !client/.gitkeep
 dev-init.sh
+node_modules/*

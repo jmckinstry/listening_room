@@ -1,0 +1,28 @@
+{
+  "name": "listening_room_imposter",
+  "version": "0.1.0",
+  "description": "A replacement for the now-defunct Listening Room. Share songs privately with your friends without the need to upload them anywhere.",
+  "main": "server.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmckinstry/listening_room.git"
+  },
+  "author": "Justin McKinstry",
+  "license": "CC-BY-NC-SA-4.0",
+  "bugs": {
+    "url": "https://github.com/jmckinstry/listening_room/issues"
+  },
+  "homepage": "https://github.com/jmckinstry/listening_room#readme",
+  "dependencies": {
+    "websocket": "1.0.26",
+    "args": "5.0.0",
+    "config": "2.0.1",
+    "bittorrent-tracker": "9.10.0"
+  }
+}

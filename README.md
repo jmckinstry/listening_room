@@ -21,8 +21,9 @@ As the original source explained before going dark, server-client streaming of h
 # Getting Started
 You can't yet. But when you can...
 
-* Configure config.js
+* Configure config/default.js
 * Run `build.sh` (this will eventually be `node build.js`)
+* Run `npm install`
 * Move client folder to web server
 * Run `node server/server.js`
 * Run `node server/server.js --add-admin <name> <pass>`
