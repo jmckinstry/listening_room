@@ -20,9 +20,10 @@
   },
   "homepage": "https://github.com/jmckinstry/listening_room#readme",
   "dependencies": {
-    "websocket": "1.0.26",
     "args": "5.0.0",
+    "bittorrent-tracker": "9.10.0",
     "config": "2.0.1",
-    "bittorrent-tracker": "9.10.0"
+    "sqlite3": "^4.0.4",
+    "websocket": "1.0.26"
   }
 }
