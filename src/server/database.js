@@ -30,9 +30,9 @@ disconnect: function() {
 	this.db = null;
 },
 
-run_updates: async function run_updates(callback_next) {
-	if (!callback_next) callback_next = function() {};
-	
+// Only call this when there are no other pending messages, events, whatnot in order to protect the database's integrity.
+// It is recommended to call "await <object>.run_updates" on the main thread while there are no other async processes going on.
+run_updates: async function run_updates() {
 	if (!this.db) {
 		throw 'Connection not initialized.';
 	}
@@ -101,8 +101,6 @@ run_updates: async function run_updates(callback_next) {
 	// Dump out the current schema version for logging
 	var current_version = (await this.db.get('SELECT `version` FROM `schema` LIMIT 1')).version;
 	console.log('Current schema version: ' + util.inspect(current_version));
-	
-	callback_next();
 },
 
 };
