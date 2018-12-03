@@ -22,8 +22,9 @@
   "dependencies": {
     "args": "5.0.0",
     "bittorrent-tracker": "9.10.0",
+    "bluebird": "^3.5.3",
     "config": "2.0.1",
-    "sqlite3": "^4.0.4",
+    "sqlite": "^3.0.0",
     "websocket": "1.0.26"
   }
 }

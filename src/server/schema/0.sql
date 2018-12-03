@@ -3,3 +3,5 @@
 CREATE TABLE `schema` (
 	`version` INTEGER NOT NULL DEFAULT 0
 );
+
+INSERT INTO `schema` VALUES (-1);

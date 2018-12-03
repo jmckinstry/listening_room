@@ -1,3 +1,4 @@
+*.sqlite
 src/cache.json
 src/vars.sed
 client/*

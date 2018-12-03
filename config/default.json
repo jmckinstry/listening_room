@@ -3,6 +3,7 @@
 		// User Credentials
 		"login_name_min_length": 8,
 		"login_name_max_length": 32,
+		"login_name_allowed_regex": ".*",
 
 		"login_pass_min_length": 8,
 	},
