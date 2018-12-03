@@ -89,13 +89,13 @@ run_updates: async function run_updates() {
 			
 			await this.db.run('UPDATE `schema` SET `version` = ?', update); // 0.sql always has this and is the first to run
 			
-			console.log('Update #' + update + ' completed.');
-			
 			await this.db.run('COMMIT TRANSACTION');
 		}
 		catch (err) {
 			f_error(err);
 		}
+			
+		console.log('Update #' + update + ' completed.');
 	}
 	
 	// Dump out the current schema version for logging
