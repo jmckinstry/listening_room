@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const util = require('util');
+//const util = require('util');
 var sqlite = require('sqlite');
 
 // TODO: Dedupe this
@@ -100,7 +100,7 @@ run_updates: async function run_updates() {
 	
 	// Dump out the current schema version for logging
 	var current_version = (await this.db.get('SELECT `version` FROM `schema` LIMIT 1')).version;
-	console.log('Current schema version: ' + util.inspect(current_version));
+	console.log('Current schema version: ' + current_version);
 },
 
 };
