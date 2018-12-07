@@ -4,8 +4,10 @@ const config = require('config');
 
 const fs = require('fs');
 //const args = require('args');
-var https = require('https');
+//var https = require('https');
+var fastify = require('fastify');
 var database = require('./src/server/database.js');
+var routing = require('./src/server/routing.js');
 var ws_server = null;
 
 // TODO: Dedupe this
@@ -46,19 +48,35 @@ await database.connect('./database.sqlite', f_error);
 await database.run_updates()
 
 // Set up routing
-function onHTTPSRequest(request, response) {
-}
+const https_config = {
+	key: (config.get('server.key') ? fs.readFileSync(config.get('server.key'), 'utf8') : null),
+	cert: (config.get('server.cert') ? fs.readFileSync(config.get('server.cert'), 'utf8') : null),
+	ca: (config.get('server.CA') ? fs.readFileSync(config.get('server.CA'), 'utf8') : null),
+};
+console.log(https_config);
 
+fastify = fastify({
+	https: https_config.key ? https_config : null,
+	logger: true
+});
 
-var server = https.createServer({
-		key: null,//fs.readFileSync(config.get('server.key')),
-		cert: null,//fs.readFileSync(config.get('server.cert'))
-	}, onHTTPSRequest);
-	
-server.listen(config.get('server.port'));
+routing.init(
+	fastify, 
+	database, 
+	(request) => {
+		if (request.user) {
+			console.log('User request for user id: ' + request.user.user_id);
+		}
+		
+		return {};
+	}
+);
 
+fastify.listen(config.get('server.port'), '0.0.0.0');
+
+/*
 ws_server = new (require('websocket').server)({
-		httpServer: server,
+		httpServer: fastify,
 		autoAcceptConnections: false
 	});
 
@@ -77,8 +95,24 @@ ws_server.on('request', function(request) {
 	// Hooked up, let them get back to life
 	request.accept();
 });
+*/
 
 console.log('Server listening (port ' + config.get('server.port') + ')...');
+
+// Actual routes
+routing.add_route_no_authenticate('/', (req,res)=>{
+	return {
+		active:true
+	};
+});
+routing.add_route_no_authenticate('/version', (req,res) => {
+	return {
+		api_version:1
+	};
+});
+routing.add_route_authenticate('/whoami', (req,res) => {
+	return req.user;
+});
 
 }
 
