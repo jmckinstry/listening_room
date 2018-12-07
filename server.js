@@ -49,9 +49,9 @@ await database.run_updates()
 
 // Set up routing
 const https_config = {
-	key: (config.get('server.key') ? fs.readFileSync(config.get('server.key'), 'utf8') : null),
-	cert: (config.get('server.cert') ? fs.readFileSync(config.get('server.cert'), 'utf8') : null),
-	ca: (config.get('server.CA') ? fs.readFileSync(config.get('server.CA'), 'utf8') : null),
+	key: (config.get('server.key') ? fs.readFileSync(config.get('server.key'), 'ascii') : null),
+	cert: (config.get('server.cert') ? fs.readFileSync(config.get('server.cert'), 'ascii') : null),
+	ca: (config.get('server.CA') ? fs.readFileSync(config.get('server.CA'), 'ascii') : null),
 };
 console.log(https_config);
 
@@ -95,6 +95,9 @@ fastify.ready((err) => {
 });
 
 // Actual routes
+fastify.get('/favicon.ico', async(req,res)=>{
+	res.code(200).header('Content-Type', 'image/x-icon').send(fs.readFileSync('src/client/images/favicon.ico'));
+});
 routing.add_route_no_authenticate('/', (req,res)=>{
 	return {
 		active:true
