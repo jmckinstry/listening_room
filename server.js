@@ -71,33 +71,28 @@ routing.init(
 		return {};
 	}
 );
-
-fastify.listen(config.get('server.port'), '0.0.0.0');
-
-/*
-ws_server = new (require('websocket').server)({
-		httpServer: fastify,
-		autoAcceptConnections: false
-	});
-
-ws_server.on('request', function(request) {
-	if (!ws_request_allowed(request)) {
-		request.reject();
-		console.log((new Date()) + ': WebSocket connection rejected.');
-		console.log('\t' + request.toString());
-		
-		return;
-	}
-	
-	// Login's allowed, hook them up	
-	ws_login(request);
-	
-	// Hooked up, let them get back to life
-	request.accept();
+fastify.register(require('fastify-ws'), {
+  library: 'ws' // NEVER USE uws LIBRARY, ITS DEPRECATED AND REMOVED
 });
-*/
 
-console.log('Server listening (port ' + config.get('server.port') + ')...');
+fastify.ready((err) => {
+	if (err) throw err
+
+	console.log('Server listening (port ' + config.get('server.port') + ')...');
+
+	fastify.ws.on('connection', (socket) => {
+		console.log('ws: Client connect');
+		
+		socket.on('message', (data) => {
+			console.log('ws: Client data: ' + data);
+			socket.send(data); // Creates an echo server
+		});
+		
+		socket.on('close', () => {
+			console.log('ws: Client disconnected.')
+		});
+	})
+});
 
 // Actual routes
 routing.add_route_no_authenticate('/', (req,res)=>{
@@ -113,6 +108,8 @@ routing.add_route_no_authenticate('/version', (req,res) => {
 routing.add_route_authenticate('/whoami', (req,res) => {
 	return req.user;
 });
+
+fastify.listen(config.get('server.port'), '0.0.0.0');
 
 }
 
