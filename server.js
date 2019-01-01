@@ -53,7 +53,6 @@ const https_config = {
 	cert: (config.get('server.cert') ? fs.readFileSync(config.get('server.cert'), 'ascii') : null),
 	ca: (config.get('server.CA') ? fs.readFileSync(config.get('server.CA'), 'ascii') : null),
 };
-console.log(https_config);
 
 fastify = fastify({
 	https: https_config.key ? https_config : null,

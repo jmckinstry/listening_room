@@ -6,13 +6,19 @@
 		"login_name_allowed_regex": ".*",
 
 		"login_pass_min_length": 8,
+		
+		// Room configuration
+		"room_create_requires_admin": false,
+		"room_max_rooms_per_user": 1,
+		"room_max_lifespan_days": 30,
+		"room_max_users_per_room": 30,
 	},
 	"server": {
 		"port": 8000,
 
 		// SSL
-		"key": null,
-		"cert": null,
+		"key": "/etc/letsencrypt/live/asier.us/privkey.pem",
+		"cert": "/etc/letsencrypt/live/asier.us/cert.pem",
 		"CA": null,
 	},
 	"client": {
