@@ -21,54 +21,74 @@ function reset_user() {
 // 	true	- login attempt succeeded and user is set up
 function do_login(name, pass) {
 	if (typeof(name) !== "string") {
-		return new Error("NAME_INVALID")
+		throw new Error("NAME_INVALID")
 	}
 	if (typeof(pass) !== "string") {
-		return new Error("PASS_INVALID")
+		throw new Error("PASS_INVALID")
 	}
-	if (name.length < _GLOBAL.login_name_min_length) {
-		return new Error("NAME_TOO_SHORT")
+	if (name.length < config.login_name_min_length) {
+		throw new Error("NAME_TOO_SHORT")
 	}
-	if (pass.length < _GLOBAL.login_pass_min_length) {
-		return new Error("PASS_TOO_SHORT")
+	if (pass.length < config.login_pass_min_length) {
+		throw new Error("PASS_TOO_SHORT")
 	}
+	
+	var b_pass = new buffer.SlowBuffer(pass.normalize('NFKC'));
+	var b_salt = new buffer.SlowBuffer(config.salt.normalize('NFKC'));
 
-	// Strong check that password hashing is in and configured
-	if (typeof(_GLOBAL.hash_function !== "function")) {
-		return new Error("HASH_FUNCTION")
-	}
-
-	var hash = _GLOBAL.hash_function(pass)
-
-	// Strong check that password hashing is at least a little reasonable
-	if (typeof(hash) !== "string"
-		|| hash.length < 16
-		|| hash == pass) {
-		return new Error("HASH_SUSPICIOUS")
-	}
-
-	// Made it far enough, toss name and hash to server and see if we're good
-	$.ajax("api/login", {
-		type:"POST",
-		data:{
-			name:name,
-			hash:hash
+	var hash_vals = {
+		N: 4096,
+		r: 16,
+		p: 2,
+		dkLen: 32
+	};
+	
+	scrypt(b_pass, b_salt, hash_vals.N, hash_vals.r, hash_vals.p, hash_vals.dkLen, function(error, progress, hash) {
+		if (error) {
+			throw new Error("HASH_FAILED: " + error)
 		}
-	})
-		.done(function(data, textResponse) {
-			reset_user()
+		else if (!hash) {
+			return;
+		} else {
+			hash = (new buffer.SlowBuffer(hash)).toString('hex');
 
-			user.name	= name
-			user.loginid	= data.loginid
-			user.token	= data.token
-			user.type	= "local"
+			// Strong check that password hashing is at least a little reasonable
+			if (typeof(hash) !== "string"
+				|| hash.length < 16
+				|| hash == pass) {
+				throw new Error("HASH_SUSPICIOUS")
+			}
 
-			return true
-	})	.fail(function(jqXHR, textResponse, error) {
-			reset_user()
+			// Made it far enough, toss name and hash to server and see if we're good
+			$.ajax("/api/login", {
+				type:"POST",
+				data:{
+					name:name,
+					hash:hash
+				}
+			})
+			.done(function(data, textResponse) {
+				reset_user()
+				
+				if (data.type === "ok") {
+					user.name	= name
+					user.loginid	= data.loginid
+					user.token	= data.token
+					user.type	= "local"
 
-			return false
-	})
+					return true
+				}
+				else {
+					throw new Error("Login failed.");
+				}
+			})
+			.fail(function(jqXHR, textResponse, error) {
+				reset_user()
+
+				return false
+			})
+		}
+	});
 }
 
 // Handle pop-ups and whatnot for OAuth login

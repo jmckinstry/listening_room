@@ -7,8 +7,11 @@ function set_ui_login() {
                 target: "#main",
                 template: "#login",
                 data: {
-                        next: "do_login()"
+                        next: "ui_do_login()"
                 }
 	})
 }
 
+function ui_do_login() {
+	do_login($('#username').val(), $('#password').val());
+}

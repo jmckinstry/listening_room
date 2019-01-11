@@ -36,6 +36,10 @@ for f in src/client/UI/templates/*; do (cat "${f}"; echo) >> client/template_${D
 # Replacement : Replace placeholder names in source files
 echo "s/{{BUILD_TIMESTAMP}}/${DATESTAMP}/g" >> src/vars.sed
 
+# Third Party Libraries
+rm -r client/thirdpartylibs
+cp -R src/client/thirdpartylibs client
+
 # client/index.html
 sed -f src/vars.sed src/client/index.html > client/index.html
 

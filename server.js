@@ -3,6 +3,7 @@
 const config = require('config');
 
 const fs = require('fs');
+const crypto = require('crypto')
 //const args = require('args');
 //var https = require('https');
 var fastify = require('fastify');
@@ -25,8 +26,8 @@ var required_config_values = {
 	'config.login_name_max_length': function(v) { return v > 0; },
 	'config.login_pass_min_length': function(v) { return v >= 0; }, // I won't stop you...
 	'config.login_name_allowed_regex': function(v) { return true; }, // We'll test if it's a regex (or left blank) later
+	'config.port': function(v) { return v > 0; },
 	
-	'server.port': function(v) { return v > 0; },
 	'server.cert': function(v) { return v === null || v.length > 0; },
 	'server.key': function(v) { return v === null || v.length > 0; },
 }
@@ -46,6 +47,14 @@ if (config.get('config.login_name_min_length') > config.get('config.login_name_m
 // Configure the database, installing/updating as necessary
 await database.connect('./database.sqlite', f_error);
 await database.run_updates()
+
+// Set the server salt if necessary
+if (!config.get('config.salt')) {
+	var val = Buffer.alloc(16);
+	crypto.randomFillSync(val);
+	console.log("new key is " + val.toString('hex') + " but we need some config magic to make it work");
+	//config.put('config.salt', val.toString('hex'));
+}
 
 // Set up routing
 const https_config = {
@@ -77,7 +86,7 @@ fastify.register(require('fastify-ws'), {
 fastify.ready((err) => {
 	if (err) throw err
 
-	console.log('Server listening (port ' + config.get('server.port') + ')...');
+	console.log('Server listening (port ' + config.get('config.port') + ')...');
 
 	fastify.ws.on('connection', (socket) => {
 		console.log('ws: Client connect');
@@ -94,24 +103,38 @@ fastify.ready((err) => {
 });
 
 // Actual routes
+fastify.register(require('fastify-static'), {
+	root: require('path').join(__dirname, '/client'),
+	prefix: '/',
+});
 fastify.get('/favicon.ico', async(req,res)=>{
 	res.code(200).header('Content-Type', 'image/x-icon').send(fs.readFileSync('src/client/images/favicon.ico'));
 });
-routing.add_route_no_authenticate('/', (req,res)=>{
+routing.add_route_no_authenticate('/api/active', (req,res)=>{
 	return {
 		active:true
 	};
 });
-routing.add_route_no_authenticate('/version', (req,res) => {
+routing.add_route_no_authenticate('/api/config', (req,res) => {
+	return config.get('config');
+});
+routing.add_route_no_authenticate('/api/version', (req,res) => {
 	return {
 		api_version:1
 	};
 });
-routing.add_route_authenticate('/whoami', (req,res) => {
+routing.add_route_no_authenticate('/api/login', (req,res) => {
+	console.log(req);
+	
+	return {
+		api_version:1
+	};
+});
+routing.add_route_authenticate('/api/whoami', (req,res) => {
 	return req.user;
 });
 
-fastify.listen(config.get('server.port'), '0.0.0.0');
+fastify.listen(config.get('config.port'), '0.0.0.0');
 
 }
 

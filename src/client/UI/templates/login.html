@@ -1,7 +1,12 @@
+<script src="thirdpartylibs/setImmediate.js"></script>
+<script src="thirdpartylibs/buffer.js"></script>
+<script src="thirdpartylibs/unorm.js"></script>
+<script src="thirdpartylibs/scrypt.js"></script>
+
 <script id="login" text="text/ractive">
 <table border="0">
-<tr><td>Name:</td><td><input type="text" name="username"></td></tr>
-<tr><td>Pass:</td><td><font color="red">Not ready for this yet</font></td></tr>
-<tr><td></td><td><button type="submit" onclick="{{next}}">Log In</button></td></tr>
+<tr><td>Name:</td><td><input type="text" id="username"></td></tr>
+<tr><td>Pass:</td><td><input type="text" id="password"></td></tr>
+<tr><td></td><td><button type="input" onclick="{{next}}">Log In</button></td></tr>
 </table>
 </script>

@@ -3,10 +3,10 @@
 // This file contains routing functionality that gets hooked up elsewhere
 
 // This function is used to create response wrappers for unified responses. This way we can always tell the difference between an error and a blank response.
-// Types:
+// type:
 // - ok : Everything worked as expected
 // - error : Something went wrong
-//  Data:
+//  data:
 //  - Whatever was attached. If ok, it's callback's return. If error, it's a generic response (so we don't leak data, check the console log for what actually went wrong).
 function make_response(type, data) {
 	if (type !== 'error' && type !== 'ok') {
@@ -19,6 +19,22 @@ function make_response(type, data) {
 	};
 }
 
+// This function looks up the correct router call given an http request type
+// type: See the const for accepted types
+// router: The router to get the function of
+const types = ['GET', 'POST'];
+function get_routing_function(type, router) {
+	if (!types.indexOf(type)) {
+		throw "routing.js: Invalid route type " + type + " specified.";
+	}
+	
+	if (type === 'GET') {
+		return router.get;
+	}
+	if (type === 'POST') {
+		return router.post;
+	}
+}
 
 var routing = {
 
@@ -44,12 +60,12 @@ init: function(router, dbo, f_get_user_data, f_get_user_authenticated) {
 	this.f_get_user_authenticated = f_get_user_authenticated;
 },
 
-add_route_authenticate: function(path, callback) {
+add_route_authenticate: function(type, path, callback) {
 	if (!this.router) {
 		throw "routing.js: routing.init not called before add_route_authenticate()";
 	}
 	
-	this.router.get(path, async(request, reply) => {
+	(get_routing_function(type, this.router))(path, async(request, reply) => {
 		try {
 			request.user = this.f_get_user_data(request);
 			if (!request.user
@@ -67,12 +83,15 @@ add_route_authenticate: function(path, callback) {
 		}
 	});
 },
-add_route_no_authenticate: function(path, callback) {
+add_route_no_authenticate: function(type, path, callback) {
 	if (!this.router) {
 		throw "routing.js: routing.init not called before add_route_no_authenticate()";
 	}
 	
-	this.router.get(path, async(request, reply) => {
+	var f = get_routing_function(type, this.router);
+	console.log('f is ' + f);
+	
+	f(path, async(request, reply) => {
 		try {
 			request.user = null;
 			request.dbo = this.dbo;
