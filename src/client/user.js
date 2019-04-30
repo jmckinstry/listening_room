@@ -61,11 +61,14 @@ function do_login(name, pass) {
 
 			// Made it far enough, toss name and hash to server and see if we're good
 			$.ajax("/api/login", {
+				headers:{
+					'Content-Type':'application/json'
+				},
 				type:"POST",
-				data:{
+				data:JSON.stringify({
 					name:name,
 					hash:hash
-				}
+				})
 			})
 			.done(function(data, textResponse) {
 				reset_user()

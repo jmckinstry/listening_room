@@ -24,7 +24,7 @@ function make_response(type, data) {
 // router: The router to get the function of
 const types = ['GET', 'POST'];
 function get_routing_function(type, router) {
-	if (!types.indexOf(type)) {
+	if (types.indexOf(type) < 0) {
 		throw "routing.js: Invalid route type " + type + " specified.";
 	}
 	
@@ -65,8 +65,9 @@ add_route_authenticate: function(type, path, callback) {
 		throw "routing.js: routing.init not called before add_route_authenticate()";
 	}
 	
-	(get_routing_function(type, this.router))(path, async(request, reply) => {
-		try {
+	try {
+		get_routing_function(type, this.router)
+		.call(this.router, path, async(request, reply) => {
 			request.user = this.f_get_user_data(request);
 			if (!request.user
 				|| !request.user.hasOwnProperty('user_id')
@@ -76,32 +77,32 @@ add_route_authenticate: function(type, path, callback) {
 			
 			request.dbo = this.dbo;
 			return make_response('ok', callback(request, reply));
-		}
-		catch (err) {
-			console.trace('Error during routing: ' + err.toString());
-			return make_response('error');
-		}
-	});
+		});
+	}
+	catch (err) {
+		console.log('Error during routing: ' + err.toString());
+		console.log(err.stack)
+		return make_response('error');
+	}
 },
 add_route_no_authenticate: function(type, path, callback) {
 	if (!this.router) {
 		throw "routing.js: routing.init not called before add_route_no_authenticate()";
 	}
 	
-	var f = get_routing_function(type, this.router);
-	console.log('f is ' + f);
-	
-	f(path, async(request, reply) => {
-		try {
-			request.user = null;
-			request.dbo = this.dbo;
-			return make_response('ok', callback(request, reply));
-		}
-		catch (err) {
-			console.trace('Error during routing: ' + err.toString());
-			return make_response('error');
-		}
-	});
+	try {	
+		get_routing_function(type, this.router)
+		.call(this.router, path, async(request, reply) => {
+				request.user = null;
+				request.dbo = this.dbo;
+				return make_response('ok', callback(request, reply));
+		});
+	}
+	catch (err) {
+		console.log('Error during routing: ' + err.toString());
+		console.log(err.stack)
+		return make_response('error');
+	}
 },
 
 

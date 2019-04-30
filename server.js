@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const config = require('config');
+var config = require('config');
 
 const fs = require('fs');
 const crypto = require('crypto')
@@ -19,7 +19,34 @@ function f_error(error) {
 
 async function main() {
 
-// Handle Config and Args first
+// Configure the database, installing/updating as necessary
+await database.connect('./database.sqlite', f_error);
+await database.run_updates()
+
+// We set the salt immediately, before any config.get(...) calls are made, because config.get(...) makes config immutable
+res = await database.db.get('SELECT `value` AS `salt` FROM `config` WHERE `name` = \'salt\'');
+
+// Set the server salt if necessary
+if (res && res.salt) {
+	config.config.salt = res.salt
+}
+else {
+	var val = Buffer.alloc(16);
+	crypto.randomFillSync(val);
+	server_salt = val.toString('hex');
+	console.log('New salt set: ' + server_salt);
+	try {
+		database.db.run('INSERT INTO `config` (`name`, `value`) VALUES ("salt", "' + server_salt + '");')
+	}
+	catch (err) {
+		throw 'Failed to insert salt into database: ' + err.toString()
+	}
+
+	config.config.salt = server_salt
+}
+console.log('Server salt: ' + config.get('config.salt'))
+
+// Handle Config and Args
 // Verify contents of Config
 var required_config_values = {
 	'config.login_name_min_length': function(v) { return v > 0; },
@@ -31,7 +58,7 @@ var required_config_values = {
 	'server.cert': function(v) { return v === null || v.length > 0; },
 	'server.key': function(v) { return v === null || v.length > 0; },
 }
-	
+
 for (key in required_config_values) {
 	if (!required_config_values.hasOwnProperty(key)) continue;
 	
@@ -42,18 +69,6 @@ for (key in required_config_values) {
 // Specialty checks
 if (config.get('config.login_name_min_length') > config.get('config.login_name_max_length')) {
 	throw 'Config Error: config.login_name_min_length must be less than config.login_name_min_length';
-}
-	
-// Configure the database, installing/updating as necessary
-await database.connect('./database.sqlite', f_error);
-await database.run_updates()
-
-// Set the server salt if necessary
-if (!config.get('config.salt')) {
-	var val = Buffer.alloc(16);
-	crypto.randomFillSync(val);
-	console.log("new key is " + val.toString('hex') + " but we need some config magic to make it work");
-	//config.put('config.salt', val.toString('hex'));
 }
 
 // Set up routing
@@ -110,28 +125,38 @@ fastify.register(require('fastify-static'), {
 fastify.get('/favicon.ico', async(req,res)=>{
 	res.code(200).header('Content-Type', 'image/x-icon').send(fs.readFileSync('src/client/images/favicon.ico'));
 });
-routing.add_route_no_authenticate('/api/active', (req,res)=>{
+
+// Non-authenticated routes
+routing.add_route_no_authenticate('GET', '/api/active', (req,res) => {
+	res.code(200).header('Content-Type', 'application/json')
 	return {
 		active:true
 	};
 });
-routing.add_route_no_authenticate('/api/config', (req,res) => {
+routing.add_route_no_authenticate('GET', '/api/config', (req,res) => {
+	res.code(200).header('Content-Type', 'application/json')
 	return config.get('config');
 });
-routing.add_route_no_authenticate('/api/version', (req,res) => {
+routing.add_route_no_authenticate('GET', '/api/version', (req,res) => {
+	res.code(200).header('Content-Type', 'application/json')
 	return {
 		api_version:1
 	};
 });
-routing.add_route_no_authenticate('/api/login', (req,res) => {
-	console.log(req);
+routing.add_route_no_authenticate('POST', '/api/login', (req,res) => {
+	res.header('Content-Type', 'application/json')
 	
 	return {
 		api_version:1
 	};
 });
-routing.add_route_authenticate('/api/whoami', (req,res) => {
-	return req.user;
+
+// Authenticated routes
+routing.add_route_authenticate('GET', '/api/whoami', (req,res) => {
+	if (req.user) {
+		res.code(200).header('Content-Type', 'application/json')
+		return req.user;
+	}
 });
 
 fastify.listen(config.get('config.port'), '0.0.0.0');

@@ -34,12 +34,17 @@ CREATE TABLE `session` (
 CREATE TABLE `room` (
 	`room_id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	`owner_id`	INTEGER NOT NULL,
-	`name`	TEXT NOT NULL UNIQUE,
+	`name`		TEXT NOT NULL UNIQUE,
 	`secret`	TEXT,
 	`public`	INTEGER NOT NULL DEFAULT 0,
 	`description`	TEXT,
 	`created_date`	TEXT NOT NULL DEFAULT 'DATETIME(''now'')',
 	`max_visitors`	INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE `config` (
+	`name`		TEXT NOT NULL,
+	`value`		TEXT NOT NULL DEFAULT ''
 );
 
 INSERT INTO `perm` VALUES (0, 'admin', 'User is a site administrator');
