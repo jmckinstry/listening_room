@@ -9,7 +9,6 @@ That site is long since gone (so much so that I am having difficulty finding it 
 As the original source explained before going dark, server-client streaming of high-quality audio is bandwidth-intensive. This project aims to alleviate that by using the wonderful [WebTorrent](https://webtorrent.io/) library, so listeners share the burden.
 
 # Requirements
-* Some variety of web server (httpd)
 * Node.js
 
 # Status
@@ -24,9 +23,8 @@ You can't yet. But when you can...
 * Configure config/default.js
 * Run `build.sh` (this will eventually be `node build.js`)
 * Run `npm install`
-* Move client folder to web server
-* Run `node server/server.js`
 * Run `node server/server.js --add-admin <name> <pass>`
+* Run `node server/server.js`
 * Log in with the new user
 
 # License
