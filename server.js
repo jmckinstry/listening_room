@@ -3,9 +3,8 @@
 var config = require('config');
 
 const fs = require('fs');
-const crypto = require('crypto')
-//const args = require('args');
-//var https = require('https');
+const salt = require('./src/server/salt.js');
+
 var fastify = require('fastify');
 var database = require('./src/server/database.js');
 var routing = require('./src/server/routing.js');
@@ -13,40 +12,23 @@ var ws_server = null;
 
 // TODO: Dedupe this
 function f_error(error) {
-	if (error !== null)
+	if (error !== null) {
 		throw 'Error: ' + error.toString();
+	}
 }
 
 async function main() {
 
 // Configure the database, installing/updating as necessary
 await database.connect('./database.sqlite', f_error);
-await database.run_updates()
+await database.run_updates();
 
 // We set the salt immediately, before any config.get(...) calls are made, because config.get(...) makes config immutable
-res = await database.db.get('SELECT `value` AS `salt` FROM `config` WHERE `name` = \'salt\'');
+var server_salt = await salt.get_or_make_salt(database);
 
-// Set the server salt if necessary
-if (res && res.salt) {
-	config.config.salt = res.salt
-}
-else {
-	var val = Buffer.alloc(16);
-	crypto.randomFillSync(val);
-	server_salt = val.toString('hex');
-	console.log('New salt set: ' + server_salt);
-	try {
-		database.db.run('INSERT INTO `config` (`name`, `value`) VALUES ("salt", "' + server_salt + '");')
-	}
-	catch (err) {
-		throw 'Failed to insert salt into database: ' + err.toString()
-	}
+config.config.salt = server_salt;
 
-	config.config.salt = server_salt
-}
-console.log('Server salt: ' + config.get('config.salt'))
-
-// Handle Config and Args
+// Handle Config
 // Verify contents of Config
 var required_config_values = {
 	'config.login_name_min_length': function(v) { return v > 0; },
@@ -70,6 +52,11 @@ for (key in required_config_values) {
 if (config.get('config.login_name_min_length') > config.get('config.login_name_max_length')) {
 	throw 'Config Error: config.login_name_min_length must be less than config.login_name_min_length';
 }
+
+// Args overwrite existing config
+//args.option('port', 'The web server port to listen on.', config.get('config.port'))
+
+console.log('Server salt: ' + config.get('config.salt'))
 
 // Set up routing
 const https_config = {

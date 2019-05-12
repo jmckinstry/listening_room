@@ -1,7 +1,10 @@
 {
-	"config": {
+	// All of the "config" entry will be sent to the client. No secrets allowed here!
+	"config": {		
+		"port": 8000,
+		
 		// User Credentials
-		"login_name_min_length": 8,
+		"login_name_min_length": 3,
 		"login_name_max_length": 32,
 		"login_name_allowed_regex": ".*",
 
@@ -12,15 +15,17 @@
 		"room_max_rooms_per_user": 1,
 		"room_max_lifespan_days": 30,
 		"room_max_users_per_room": 30,
+		
+		// Encryption config
+		"scrypt_N": 4096,
+		"scrypt_r": 16,
+		"scrypt_p": 2,
+		"scrypt_dkLen": 32,
 	},
 	"server": {
-		"port": 8000,
-
 		// SSL
-		"key": "/etc/letsencrypt/live/asier.us/privkey.pem",
-		"cert": "/etc/letsencrypt/live/asier.us/cert.pem",
+		"key": null,
+		"cert": null,
 		"CA": null,
-	},
-	"client": {
 	}
 }
