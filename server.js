@@ -133,6 +133,9 @@ routing.add_route_no_authenticate('GET', '/api/version', (req,res) => {
 routing.add_route_no_authenticate('POST', '/api/login', (req,res) => {
 	res.header('Content-Type', 'application/json')
 	
+	console.log(req.body);
+	console.log('login attempt (' + req.body.name + ', ' + req.body.hash + '): ');
+	
 	return {
 		api_version:1
 	};

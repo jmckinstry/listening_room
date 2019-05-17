@@ -97,14 +97,55 @@ functions['add-admin'] = async function (args) {
 		process.exit(2);
 	}
 	
+	// Make sure the user doesn't already exist
+	var user_id = undefined;
+	var res = await database.db.get('SELECT `user_id` FROM `user` WHERE `name` = "' + args.name + '";');
+	if (res && res.user_id) {
+		user_id = res.user_id;
+	}
+	if (user_id) {
+		console.log('User "' + args.user + '" already exists with ID ' + user_id);
+		
+		process.exit(3);
+	}
+	
 	// Make the encrypted password
-	crypto.scrypt(args.pass, server_salt, config.config.scrypt_dkLen, {N:config.config.scrypt_N, r:config.config.scrypt_r, p:config.config.scrypt_p}, (err, key) => {
+	crypto.scrypt(args.pass, server_salt, config.config.scrypt_dkLen, {N:config.config.scrypt_N, r:config.config.scrypt_r, p:config.config.scrypt_p}, async(err, key) => {
 		if (err) {
 			throw err;
 		}
 		
-		pass = key.toString('hex');
-		console.log(pass);
+		var hash = key.toString('hex');
+		try {
+			await database.db.run('BEGIN TRANSACTION');
+			await database.db.run('INSERT INTO `user` (`name`, `pass`) VALUES ("' + args.name + '", "' + hash + '");');
+			res = await database.db.get('SELECT `user_id` FROM `user` WHERE `name` = "' + args.name + '";');
+			if (res && res.user_id) {
+				user_id = res.user_id;
+			}
+			if (!user_id) {
+				throw 'Failed to get new user id for ' + args.name;
+			}
+		}
+		catch (err) {
+			console.log(err);
+			process.exit(3);
+		}
+		
+		try {
+			await database.db.run('INSERT INTO `user_perm` (`user_id`, `perm_id`, `value`) VALUES (1, (SELECT `perm_id` FROM `perm` WHERE `name`="admin"), "true");');
+			await database.db.run('COMMIT TRANSACTION');
+		}
+		catch (err) {
+			// Must clean up previous work
+			try {
+				await database.db.run('ROLLBACK');
+			}
+			catch (err) {}
+			
+			console.log(err);
+			process.exit(3);
+		}
 	});
 };
 

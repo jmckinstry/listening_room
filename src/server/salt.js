@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 
-const crypto = require('crypto');
+const random = require('./src/server/random.js');
 
 var so = {
 
 make_salt: function() {
-	var val = Buffer.alloc(16);
-	crypto.randomFillSync(val);
-	salt = val.toString('hex');
-	
-	return salt;
+	return random.get_random_hex(16);
 },
 
 get_salt: async function(database) {
@@ -23,11 +19,11 @@ get_salt: async function(database) {
 },
 
 get_or_make_salt: async function(database) {
-	salt = this.get_salt(database);
+	salt = await this.get_salt(database);
 	
 	if (!salt) {
-		salt = make_salt();
-		await set_salt(database, salt);
+		salt = this.make_salt();
+		await this.set_salt(database, salt);
 	}
 	
 	return salt;

@@ -6,8 +6,8 @@ CREATE TABLE `user` (
 	`pass`	TEXT NOT NULL,
 	`enabled`	INTEGER NOT NULL DEFAULT 1,
 	`disabled_message`	TEXT,
-	`created_date`	TEXT NOT NULL DEFAULT 'DATETIME(''now'')',
-	`last_accessed_date`	TEXT NOT NULL DEFAULT 'DATETIME(''now'')',
+	`created_date`	TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`last_accessed_date`	TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`deleted`	INTEGER NOT NULL DEFAULT 0
 );
 
@@ -38,7 +38,7 @@ CREATE TABLE `room` (
 	`secret`	TEXT,
 	`public`	INTEGER NOT NULL DEFAULT 0,
 	`description`	TEXT,
-	`created_date`	TEXT NOT NULL DEFAULT 'DATETIME(''now'')',
+	`created_date`	TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`max_visitors`	INTEGER NOT NULL DEFAULT 0
 );
 
