@@ -13,7 +13,7 @@ function reset_user() {
 	user.type	= null
 }
 
-// Given a login name and password, hash the password and attempt to log in with it
+// Given a login name, password, and nonce, hash the password and attempt to log in with it
 //
 // Returns:
 // 	Error	- inputs were invalid
@@ -35,6 +35,7 @@ function do_login(name, pass) {
 	
 	var b_pass = new buffer.SlowBuffer(pass.normalize('NFKC'));
 	var b_salt = new buffer.SlowBuffer(config.salt.normalize('NFKC'));
+	var nonce = undefined;
 
 	var hash_vals = {
 		N: 4096,
@@ -59,38 +60,53 @@ function do_login(name, pass) {
 				throw new Error("HASH_SUSPICIOUS")
 			}
 
-			// Made it far enough, toss name and hash to server and see if we're good
-			$.ajax("/api/login", {
-				headers:{
-					'Content-Type':'application/json'
-				},
-				type:"POST",
-				data:JSON.stringify({
-					name:name,
-					hash:hash
-				})
+			// Tell the server we need a login nonce
+			$.ajax("/api/login_nonce", {
+                                headers:{
+                                        'Content-Type':'application/json'
+                                },
+                                type:"POST"
 			})
 			.done(function(data, textResponse) {
-				reset_user()
-				
-				if (data.type === "ok") {
-					user.name	= name
-					user.loginid	= data.loginid
-					user.token	= data.token
-					user.type	= "local"
-
-					return true
+				if (data.type != "ok") {
+					throw new Error("NO_NONCE_AVAILABLE")
 				}
-				else {
-					throw new Error("Login failed.");
-				}
-			})
-			.fail(function(jqXHR, textResponse, error) {
-				reset_user()
+				nonce = data.nonce
+				nonce_val = data.val
 
-				return false
+				// Made it far enough, toss name and hash to server and see if we're good
+				$.ajax("/api/login", {
+					headers:{
+						'Content-Type':'application/json'
+					},
+					type:"POST",
+					data:JSON.stringify({
+						name:name,
+						hash:sha256(hash+nonce)
+					})
+				})
+				.done(function(data, textResponse) {
+					reset_user()
+					
+					if (data.type === "ok") {
+						user.name	= name
+						user.loginid	= data.loginid
+						user.token	= data.token
+						user.type	= "local"
+	
+						return true
+					}
+					else {
+						throw new Error("Login failed.");
+					}
+				})
+				.fail(function(jqXHR, textResponse, error) {
+					reset_user()
+	
+					return false
+				})
 			})
-		}
+		};
 	});
 }
 

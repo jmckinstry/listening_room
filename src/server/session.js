@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-const random = require('./src/server/random.js');
+var random = require('./random.js');
 
 var session = {
 	
 verify_session: async function (db, address, user_id, session) {
 	try {
 		var res = db.db.get('SELECT 1 AS "found" FROM `session` WHERE '
-			+ '`address` = "' + address + "'
+			+ '`address` = "' + address + '"'
 			+ ' AND `user_id` = ' + user_id + ''
 			+ ' AND `session` = "' + session + '"'
-		' LIMIT 1');
+			+ ' LIMIT 1');
 		
 		if (res && res.found) {
 			return true;
@@ -39,7 +39,7 @@ create_session: async function (db, address, user_id) {
 			+ '"' + user_id + '",'
 			+ '"' + session + '",'
 			+ 'DATETIME("now")'
-			+ ');';
+			+ ');');
 		await db.db.run('COMMIT TRANSACTION;');
 	}
 	catch (err) {

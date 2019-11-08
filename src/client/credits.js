@@ -15,6 +15,7 @@ var dialog_credits
 // print_credits () returns string(html)
 function print_credits() { 
 	if ($("#credits-accordion")[0] == null) {
+		dialog_credits = $("#credits-dialog")
 		$("#credits-dialog").append("<div id=\"credits-accordion\"></div>")
 
 		for (var x = 0; x < credits.length; x++) {
@@ -29,9 +30,8 @@ function print_credits() {
 				+ "</div>"
 			)
 		}
-		$("#credits-accordion").accordion()
-		dialog_credits = $("#credits-dialog")
 		dialog_credits.dialog({
+			/*
 			open: function(event, ui) {
 				$(this).position({
 					of: $("#credits-location"),
@@ -40,7 +40,9 @@ function print_credits() {
 					collision: "flip flip"
 				})
 			}
+			*/
 		})
+		$("#credits-accordion").accordion()
 	}
 	else if (dialog_credits.is(":visible")) {
 		dialog_credits.hide()

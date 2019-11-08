@@ -8,6 +8,9 @@ const salt = require('./src/server/salt.js');
 var fastify = require('fastify');
 var database = require('./src/server/database.js');
 var routing = require('./src/server/routing.js');
+var session = require('./src/server/session.js');
+var login = require('./src/server/login.js');
+var random = require('./src/server/random.js');
 var ws_server = null;
 
 // TODO: Dedupe this
@@ -110,41 +113,92 @@ fastify.register(require('fastify-static'), {
 	prefix: '/',
 });
 fastify.get('/favicon.ico', async(req,res)=>{
-	res.code(200).header('Content-Type', 'image/x-icon').send(fs.readFileSync('src/client/images/favicon.ico'));
 });
 
 // Non-authenticated routes
 routing.add_route_no_authenticate('GET', '/api/active', (req,res) => {
-	res.code(200).header('Content-Type', 'application/json')
 	return {
 		active:true
 	};
 });
 routing.add_route_no_authenticate('GET', '/api/config', (req,res) => {
-	res.code(200).header('Content-Type', 'application/json')
 	return config.get('config');
 });
 routing.add_route_no_authenticate('GET', '/api/version', (req,res) => {
-	res.code(200).header('Content-Type', 'application/json')
 	return {
 		api_version:1
 	};
 });
+var nonce_queue = new Array();
+var nonce = 0;
+routing.add_route_no_authenticate('GET', '/api/login_nonce', (req,res) => {
+	// Clear out old nonces
+	current_seconds = parseInt(Date.now().toString().substr(0,10))
+	while ((x = nonce_queue.shift()) && x['time'] + config.login_nonce_seconds < current_seconds) {}
+	if (x) nonce_queue.unshift(x)
+
+	// If there is something stupid going on, don't kill the server with nonces
+	if (nonce_queue.length > 100000) {
+		throw 'Nonce list full (bug or dos attack)'
+	}
+
+	// TODO: Add a list of nonce creates per IP so we can rate limit them if necessary
+	console.log(random)
+
+	random_val = random.get_random_hex(8);
+	new_nonce = {'time':current_seconds, 'nonce':nonce++, 'val':random_val}
+	nonce_queue.push(new_nonce)
+
+	return {
+		nonce:new_nonce['nonce'],
+		val:new_nonce['val']
+	};
+});
 routing.add_route_no_authenticate('POST', '/api/login', (req,res) => {
-	res.header('Content-Type', 'application/json')
-	
-	console.log(req.body);
-	console.log('login attempt (' + req.body.name + ', ' + req.body.hash + '): ');
+	//console.log(req.body);
+	console.log('login attempt (' + req.body.name + ', ' + req.body.hash + ', ' + req.body.nonce + '): ');
+
+	// Find and remove the nonce they're using
+	nonce = undefined
+	for (i in nonce_queue) {
+		if (nonce_queue[i]['nonce'] == req.body.nonce) {
+			nonce = nonce_queue[i]
+			nonce_queue.splice(i,1)
+
+			break;
+		}
+	}
+
+	if (!nonce) {
+		throw 'Nonce expired or does not exist.';
+	}
+
+	// Do the login attempt
+	var user_id = login.verify_login(db, req.body.name, req.body.hash, nonce['val']);
+
+	if (!user_id) {
+		return {
+			success:false
+		};
+	}
+
+	var session_id = session.create_session(db, req.address, user_id);
+
+	if (!session_id) {
+		return {
+			success:false
+		};
+	}
 	
 	return {
-		api_version:1
+		success:true,
+		session_id:session_id
 	};
 });
 
 // Authenticated routes
 routing.add_route_authenticate('GET', '/api/whoami', (req,res) => {
 	if (req.user) {
-		res.code(200).header('Content-Type', 'application/json')
 		return req.user;
 	}
 });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const random = require('./src/server/random.js');
+const random = require('./random.js');
 
 var so = {
 

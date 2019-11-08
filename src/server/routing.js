@@ -8,14 +8,14 @@
 // - error : Something went wrong
 //  data:
 //  - Whatever was attached. If ok, it's callback's return. If error, it's a generic response (so we don't leak data, check the console log for what actually went wrong).
-function make_response(type, data) {
+function make_response(type, data, error) {
 	if (type !== 'error' && type !== 'ok') {
 		throw 'routing.js:make_response was called with an invalid type';
 	}
 	
 	return {
 		type: type,
-		data: (type === 'error' ? 'API ERROR' : data)
+		data: (type === 'error' ? (error ? error : 'API ERROR') : data)
 	};
 }
 
@@ -34,6 +34,11 @@ function get_routing_function(type, router) {
 	if (type === 'POST') {
 		return router.post;
 	}
+}
+
+// All responses are 200 (the server heard you), JSON (no different message types)
+function condition_response(reply) {
+	reply.code(200).header('Content-Type', 'application/json')
 }
 
 var routing = {
@@ -65,44 +70,48 @@ add_route_authenticate: function(type, path, callback) {
 		throw "routing.js: routing.init not called before add_route_authenticate()";
 	}
 	
-	try {
-		get_routing_function(type, this.router)
-		.call(this.router, path, async(request, reply) => {
+	get_routing_function(type, this.router)
+	.call(this.router, path, async(request, reply) => {
+		condition_response(reply)
+
+		try {
 			request.user = this.f_get_user_data(request);
 			if (!request.user
 				|| !request.user.hasOwnProperty('user_id')
 				|| !f_get_user_authenticated(request.user.user_id)) {
-				throw 'User is not allowed to connect.';
+				throw 'User is not authenticated.';
 			}
 			
 			request.dbo = this.dbo;
 			return make_response('ok', callback(request, reply));
-		});
-	}
-	catch (err) {
-		console.log('Error during routing: ' + err.toString());
-		console.log(err.stack)
-		return make_response('error');
-	}
+		}
+		catch (err) {
+			console.log('Error during routing: ' + err.toString());
+			console.log(new Error().stack)
+			return make_response('error', undefined, err);
+		}
+	});
 },
 add_route_no_authenticate: function(type, path, callback) {
 	if (!this.router) {
 		throw "routing.js: routing.init not called before add_route_no_authenticate()";
 	}
 	
-	try {	
-		get_routing_function(type, this.router)
-		.call(this.router, path, async(request, reply) => {
-				request.user = null;
-				request.dbo = this.dbo;
-				return make_response('ok', callback(request, reply));
-		});
-	}
-	catch (err) {
-		console.log('Error during routing: ' + err.toString());
-		console.log(err.stack)
-		return make_response('error');
-	}
+	get_routing_function(type, this.router)
+	.call(this.router, path, async(request, reply) => {
+		condition_response(reply)
+
+		try {	
+			request.user = null;
+			request.dbo = this.dbo;
+			return make_response('ok', callback(request, reply));
+		}
+		catch (err) {
+			console.log('Error during routing: ' + err.toString());
+			console.log(new Error().stack)
+			return make_response('error');
+		}
+	});
 },
 
 
