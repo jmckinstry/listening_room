@@ -2,16 +2,18 @@
 
 var config = require('config');
 
+
 const fs = require('fs');
 const salt = require('./src/server/salt.js');
 
 var fastify = require('fastify');
+var fastify_sslgen = require('fastify-sslgen').default;
+
 var database = require('./src/server/database.js');
 var routing = require('./src/server/routing.js');
 var session = require('./src/server/session.js');
 var login = require('./src/server/login.js');
 var random = require('./src/server/random.js');
-var ws_server = null;
 
 // TODO: Dedupe this
 function f_error(error) {
@@ -69,7 +71,8 @@ const https_config = {
 };
 
 fastify = fastify({
-	https: https_config.key ? https_config : null,
+	//https: https_config.key ? https_config : null,
+	https: true,
 	logger: true
 });
 
@@ -85,8 +88,25 @@ routing.init(
 	}
 );
 fastify.register(require('fastify-ws'), {
-  library: 'ws' // NEVER USE uws LIBRARY, ITS DEPRECATED AND REMOVED
+	library: 'ws' // NEVER USE uws LIBRARY, ITS DEPRECATED AND REMOVED
 });
+if (!https_config.key) {
+	fastify.register(fastify_sslgen, {
+		key: "./config/temp_key.pem",
+		cert: "./config/temp_cert.pem",
+		info: {
+			// TODO: Move this to the config file
+			altNames: ["0.0.0.0"],
+			commonName: "0.0.0.0",
+			days: 365,
+			emailAddress: "no@no.no",
+			locality: "Server",
+			organization: "Listening Room Imposter",
+			organizationUnit: "Music",
+			state: "QLD"
+		}
+	});
+}
 
 fastify.ready((err) => {
 	if (err) throw err
@@ -112,7 +132,7 @@ fastify.register(require('fastify-static'), {
 	root: require('path').join(__dirname, '/client'),
 	prefix: '/',
 });
-fastify.get('/favicon.ico', async(req,res)=>{
+fastify.get('/favicon.ico', (req,res)=>{
 });
 
 // Non-authenticated routes
@@ -143,9 +163,9 @@ routing.add_route_no_authenticate('GET', '/api/login_nonce', (req,res) => {
 	}
 
 	// TODO: Add a list of nonce creates per IP so we can rate limit them if necessary
-	console.log(random)
-
+	
 	random_val = random.get_random_hex(8);
+	//random_val = "aaaaaaaa"
 	new_nonce = {'time':current_seconds, 'nonce':nonce++, 'val':random_val}
 	nonce_queue.push(new_nonce)
 
@@ -159,22 +179,22 @@ routing.add_route_no_authenticate('POST', '/api/login', (req,res) => {
 	console.log('login attempt (' + req.body.name + ', ' + req.body.hash + ', ' + req.body.nonce + '): ');
 
 	// Find and remove the nonce they're using
-	nonce = undefined
+	cur_nonce = undefined
 	for (i in nonce_queue) {
 		if (nonce_queue[i]['nonce'] == req.body.nonce) {
-			nonce = nonce_queue[i]
+			cur_nonce = nonce_queue[i]
 			nonce_queue.splice(i,1)
 
 			break;
 		}
 	}
 
-	if (!nonce) {
+	if (!cur_nonce) {
 		throw 'Nonce expired or does not exist.';
 	}
 
 	// Do the login attempt
-	var user_id = login.verify_login(db, req.body.name, req.body.hash, nonce['val']);
+	var user_id = login.verify_login(database, req.body.name, req.body.hash, nonce['val']);
 
 	if (!user_id) {
 		return {
@@ -182,7 +202,7 @@ routing.add_route_no_authenticate('POST', '/api/login', (req,res) => {
 		};
 	}
 
-	var session_id = session.create_session(db, req.address, user_id);
+	var session_id = session.create_session(database, req.address, user_id);
 
 	if (!session_id) {
 		return {

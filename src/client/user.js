@@ -65,14 +65,15 @@ function do_login(name, pass) {
                                 headers:{
                                         'Content-Type':'application/json'
                                 },
-                                type:"POST"
+                                type:"GET"
 			})
 			.done(function(data, textResponse) {
 				if (data.type != "ok") {
 					throw new Error("NO_NONCE_AVAILABLE")
 				}
-				nonce = data.nonce
-				nonce_val = data.val
+				data = data.data
+				var nonce = data.nonce
+				var nonce_val = data.val
 
 				// Made it far enough, toss name and hash to server and see if we're good
 				$.ajax("/api/login", {
@@ -82,13 +83,15 @@ function do_login(name, pass) {
 					type:"POST",
 					data:JSON.stringify({
 						name:name,
-						hash:sha256(hash+nonce)
+						hash:sha256(hash+nonce_val),
+						nonce:nonce
 					})
 				})
 				.done(function(data, textResponse) {
 					reset_user()
 					
 					if (data.type === "ok") {
+						data = data.data
 						user.name	= name
 						user.loginid	= data.loginid
 						user.token	= data.token

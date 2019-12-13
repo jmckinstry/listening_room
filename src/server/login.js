@@ -7,7 +7,7 @@ var login = {
 // Given a user name, user hash, and nonce for the hash, verify the login attempt
 verify_login: async function (db, name, hash, nonce) {
 	try {
-		var res = db.db.get('SELECT `user_id`, `password` FROM `user` WHERE '
+		var res = db.db.get('SELECT `user_id`, `pass` FROM `user` WHERE '
 			+ '`name`= "' + name + '"'
 			+ ' LIMIT 1'
 		);
@@ -16,7 +16,7 @@ verify_login: async function (db, name, hash, nonce) {
 			return false;
 		}
 
-		var my_hash = crypto.createHash('sha256').update(res.password + nonce).digest('hex');
+		var my_hash = crypto.createHash('sha256').update(String(res.password + nonce)).digest('hex');
 
 		if (my_hash != hash) {
 			return false;
@@ -34,4 +34,4 @@ verify_login: async function (db, name, hash, nonce) {
 	
 };
 
-module.export = login;
+module.exports = login;

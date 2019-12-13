@@ -87,7 +87,7 @@ add_route_authenticate: function(type, path, callback) {
 		}
 		catch (err) {
 			console.log('Error during routing: ' + err.toString());
-			console.log(new Error().stack)
+			console.log(err.stack)
 			return make_response('error', undefined, err);
 		}
 	});
@@ -108,7 +108,7 @@ add_route_no_authenticate: function(type, path, callback) {
 		}
 		catch (err) {
 			console.log('Error during routing: ' + err.toString());
-			console.log(new Error().stack)
+			console.log(err.stack)
 			return make_response('error');
 		}
 	});

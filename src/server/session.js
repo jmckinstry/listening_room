@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var random = require('./random.js');
+const random = require('./random.js');
 
 var session = {
 	
@@ -61,4 +61,4 @@ clear_old_sessions: async function (db, config) {
 
 };
 
-module.export = session;
+module.exports = session;

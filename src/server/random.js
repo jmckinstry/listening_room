@@ -15,4 +15,4 @@ get_random_hex: function (length) {
 
 };
 
-module.export = random;
+module.exports = random;
