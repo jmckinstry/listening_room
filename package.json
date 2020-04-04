@@ -27,7 +27,7 @@
     "fastify-sslgen": "^1.0.0",
     "fastify-static": "^1.0.0",
     "fastify-ws": "^1.0.0",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.3",
     "sqlite": "^3.0.0"
   }
 }
